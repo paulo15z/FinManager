@@ -1,0 +1,182 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+        var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                document.querySelector('[data-role="file-content"]').value = XLSX.utils.sheet_to_csv(csv);
+
+            } catch (e) {
+                console.error("Error parsing XLSX file: " + e.message);
+                document.querySelector('[data-role="file-content"]').value = "Error reading file. Please check the file format.";
+            }
+        }
+        }
+</script>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Relatórios{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📈 Relatórios</h2>
+    </div>
+    <div class="card-body">
+        <form method="get" class="form-container">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="form-group">
+                    <label for="{{ form.data_inicio.id_for_label }}" class="form-label">{{ form.data_inicio.label }}</label>
+                    {{ form.data_inicio }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.data_fim.id_for_label }}" class="form-label">{{ form.data_fim.label }}</label>
+                    {{ form.data_fim }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.metodo_pagamento.id_for_label }}" class="form-label">{{ form.metodo_pagamento.label }}</label>
+                    {{ form.metodo_pagamento }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if lancamentos_filtrados %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="text-2xl font-bold text-success">R$ {{ total_entradas|floatformat:2 }}</div>
+                <div class="text-sm text-secondary">Total Entradas</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|floatformat:2 }}</div>
+                <div class="text-sm text-secondary">Total Saídas</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="text-2xl font-bold">R$ {{ saldo_periodo|floatformat:2 }}</div>
+                <div class="text-sm text-secondary">Saldo do Período</div>
+            </div>
+        </div>
+    </div>
+    <h3 class="text-lg font-semibold mt-6 mb-3">Lançamentos do Período</h3>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Categoria</th>
+                    <th>Fornecedor</th>
+                    <th>Método de Pagamento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lancamento in lancamentos_filtrados %}
+                    <tr>
+                        <td>{{ lancamento.data|date:"d/m/Y" }}</td>
+                        <td>{{ lancamento.descricao }}</td>
+                        <td>{{ lancamento.get_tipo_display }}</td>
+                        <td class="font-semibold {% if lancamento.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {% if lancamento.tipo == 'entrada' %}+{% else %}-{% endif %}R$ {{ lancamento.valor|floatformat:2 }}
+                        </td>
+                        <td>{{ lancamento.categoria|default:"-" }}</td>
+                        <td>{{ lancamento.fornecedor|default:"-" }}</td>
+                        <td>{{ lancamento.get_metodo_pagamento_display|default:"-" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary">Nenhum lançamento encontrado para os filtros selecionados.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if gastos_por_fornecedor %}
+        <h3 class="text-lg font-semibold mt-6 mb-3">Gastos por Fornecedor</h3>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fornecedor</th>
+                        <th>Total Gasto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in gastos_por_fornecedor %}
+                    <tr>
+                        <td>{{ item.fornecedor__nome }}</td>
+                        <td>R$ {{ item.total_gasto|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if resumo_semanal %}
+        <h3 class="text-lg font-semibold mt-6 mb-3">Resumo Semanal</h3>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Semana</th>
+                        <th>Total Entradas</th>
+                        <th>Total Saídas</th>
+                        <th>Saldo da Semana</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for semana in resumo_semanal %}
+                    <tr>
+                        <td>{{ semana.semana }}</td>
+                        <td>R$ {{ semana.total_entradas|floatformat:2 }}</td>
+                        <td>R$ {{ semana.total_saidas|floatformat:2 }}</td>
+                        <td>R$ {{ semana.saldo_semana|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+{% else %}
+    <p class="text-center mt-6">Use o formulário acima para gerar um relatório.</p>
+{% endif %}
+
+{% endblock %}

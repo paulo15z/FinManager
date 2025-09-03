@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Cofrinhos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Seus Cofrinhos</h2>
+    </div>
+    <div class="card-body">
+        <div class="actions-bar">
+            <a href="{% url 'adicionar_cofrinho' %}" class="btn btn-primary">Adicionar Novo Cofre</a>
+            <a href="{% url 'transferir_cofrinho' %}" class="btn btn-secondary">Transferir</a>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Saldo Atual</th>
+                        <th>Meta</th>
+                        <th>Progresso</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cofrinho in cofrinhos %}
+                    <tr>
+                        <td>{{ cofrinho.nome }}</td>
+                        <td>R$ {{ cofrinho.saldo|stringformat:".2f" }}</td>
+                        <td>R$ {{ cofrinho.meta|stringformat:".2f" }}</td>
+                        <td>
+                            {% if cofrinho.meta > 0 %}
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: {{ cofrinho.progresso }}%;"></div>
+                                    <span class="progress-text">{{ cofrinho.progresso|floatformat:0 }}%</span>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="flex gap-2">
+                            <a href="{% url 'editar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-outline btn-warning">Editar</a>
+                            <a href="{% url 'deletar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-outline btn-danger">Excluir</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum cofre cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

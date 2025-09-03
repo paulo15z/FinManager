@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Fornecedores{% endblock %}
+{% block content %}
+    <h1 class="mb-4">Fornecedores Cadastrados</h1>
+    <a href="{% url 'adicionar_fornecedor' %}" class="btn btn-primary mb-3">Adicionar Novo Fornecedor</a>
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nome</th>
+                <th>CNPJ</th>
+                <th>Contato</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fornecedor in fornecedores %}
+            <tr>
+                <td>{{ fornecedor.nome|default:"-" }}</td>
+                <td>{{ fornecedor.cnpj|default:"-" }}</td>
+                <td>{{ fornecedor.contato|default:"-" }}</td>
+                <td>
+                    <a href="{% url 'editar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'deletar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-danger">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhum fornecedor cadastrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

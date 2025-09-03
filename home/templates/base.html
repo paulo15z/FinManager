@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gerente Financeiro{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'gerente/css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{% url 'home' %}" class="logo">💰 Gerente Financeiro</a>
+                <nav class="nav">
+                    <a href="{% url 'lista_lancamentos' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_lancamentos' %}active{% endif %}">
+                        📊 Lançamentos
+                    </a>
+                    <a href="{% url 'lista_fornecedores' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_fornecedores' %}active{% endif %}">
+                        🏢 Fornecedores
+                    </a>
+                    <a href="{% url 'lista_cofrinhos' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_cofrinhos' %}active{% endif %}">
+                        🏦 Cofrinhos
+                     </a>
+                    <a href="{% url 'lista_categorias' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_categorias' %}active{% endif %}">
+                        🏦 Categorias
+                     </a>
+                    <a href="{% url 'relatorio_entradas_saidas' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorio_entradas_saidas' %}active{% endif %}">
+                        📈 Relatórios
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} fade-in">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('[href*="deletar"]');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('Tem certeza que deseja excluir este item?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

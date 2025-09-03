@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Fechar Caixa</h2>
+  <p>Caixa aberto em: {{ caixa.data_abertura }}</p>
+  <p>Saldo atual em dinheiro: R$ {{ caixa.saldo_atual_dinheiro }}</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-danger">Fechar Caixa</button>
+  </form>
+{% endblock %}
+
+

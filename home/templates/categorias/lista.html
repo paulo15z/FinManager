@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Categorias - Gerente Financeiro{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-bold">📂 Categorias</h1>
+    <a href="{% url 'adicionar_categoria' %}" class="btn btn-primary btn-lg">
+        ➕ Nova Categoria
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Categorias Cadastradas</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for categoria in categorias %}
+                    <tr>
+                        <td>{{ categoria.nome }}</td>
+                        <td>{{ categoria.descricao|default:"-" }}</td>
+                        <td>
+                            <span class="badge badge-{% if categoria.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                                {{ categoria.tipo }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="flex gap-2 justify-center">
+                                <a href="{% url 'editar_categoria' categoria.id %}" class="btn btn-warning btn-sm">
+                                    ✏️ Editar
+                                </a>
+                                <a href="{% url 'deletar_categoria' categoria.id %}" class="btn btn-danger btn-sm">
+                                    🗑️ Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📂</div>
+                                <h3 class="font-semibold mb-2">Nenhuma categoria encontrada</h3>
+                                <p class="text-secondary mb-4">Comece adicionando sua primeira categoria.</p>
+                                <a href="{% url 'adicionar_categoria' %}" class="btn btn-primary">
+                                    ➕ Adicionar Primeira Categoria
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

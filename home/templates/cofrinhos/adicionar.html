@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Adicionar Cofre{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Adicionar Novo Cofre</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-secondary">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Salvar Cofre</button>
+                <a href="{% url 'lista_cofrinhos' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gerente Financeiro{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-bold">🏠 Dashboard</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-success">R$ {{ total_entradas|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Total Entradas (Mês)</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Total Saídas (Mês)</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">R$ {{ saldo_total|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Saldo Atual</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Últimos Lançamentos</h2>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lancamento in ultimos_lancamentos %}
+                    <tr>
+                        <td>{{ lancamento.data|date:"d/m/Y" }}</td>
+                        <td>{{ lancamento.descricao }}</td>
+                        <td class="font-semibold {% if lancamento.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {% if lancamento.tipo == 'entrada' %}+{% else %}-{% endif %}R$ {{ lancamento.valor }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-secondary">
+                            Nenhum lançamento recente.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-body text-right">
+            <a href="{% url 'lista_lancamentos' %}" class="btn btn-outline btn-sm">
+                Ver todos os lançamentos →
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Cofrinhos em Andamento</h2>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Saldo</th>
+                        <th>Meta</th>
+                        <th>Progresso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cofrinho in cofrinhos %}
+                    <tr>
+                        <td>{{ cofrinho.nome }}</td>
+                        <td>R$ {{ cofrinho.saldo|stringformat:".2f" }}</td>
+                        <td>R$ {{ cofrinho.meta|stringformat:".2f" }}</td>
+                        <td>
+                             {% if cofrinho.meta > 0 %}
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: {{ cofrinho.progresso }}%;"></div>
+                                    <span class="progress-text">{{ cofrinho.progresso|floatformat:0 }}%</span>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-secondary">
+                            Nenhum cofrinho em andamento.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-body text-right">
+            <a href="{% url 'lista_cofrinhos' %}" class="btn btn-outline btn-sm">
+                Ver todos os cofrinhos →
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

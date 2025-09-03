@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Histórico de Caixas</h2>
+
+  {% if caixas %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Data de Abertura</th>
+          <th>Data de Fechamento</th>
+          <th>Saldo Inicial (Dinheiro)</th>
+          <th>Saldo Final (Dinheiro)</th>
+          <th>Detalhes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for caixa in caixas %}
+          <tr>
+            <td>{{ caixa.data_abertura|date:'d/m/Y H:i' }}</td>
+            <td>{% if caixa.data_fechamento %}{{ caixa.data_fechamento|date:'d/m/Y H:i' }}{% else %}Aberto{% endif %}</td>
+            <td>R$ {{ caixa.saldo_inicial_dinheiro|floatformat:2 }}</td>
+            <td>R$ {{ caixa.saldo_final_dinheiro|floatformat:2 }}</td>
+            <td><a href="{% url 'detalhes_caixa' caixa.pk %}" class="btn btn-info btn-sm">Ver Detalhes</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if is_paginated %}
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+          {% endif %}
+          {% for i in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <p>Nenhum caixa registrado ainda.</p>
+  {% endif %}
+
+  <a href="{% url 'abrir_caixa' %}" class="btn btn-primary">Abrir Novo Caixa</a>
+{% endblock %}
+
+

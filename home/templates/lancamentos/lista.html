@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Lançamentos - Gerente Financeiro{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-bold">📊 Lançamentos</h1>
+    <a href="{% url 'adicionar_lancamento' %}" class="btn btn-primary btn-lg">
+        ➕ Novo Lançamento
+    </a>
+</div>
+
+<div class="resumo-grid">
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-success">R$ {{ total_entradas|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Total Entradas</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Total Saídas</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">R$ {{ saldo_total|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Saldo</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <a href="{% url 'lista_cofrinhos' %}" class="text-2xl font-bold text-blue-500 hover:text-blue-700 transition">
+                🏦 Cofrinhos
+            </a>
+            <div class="text-sm text-secondary">Acesse aqui</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-6">
+    <div class="card-header">
+        <h2 class="card-title">Histórico de Lançamentos</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Fornecedor</th>
+                        <th>Valor (R$)</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lancamento in lancamentos %}
+                    <tr>
+                        <td>{{ lancamento.data|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge badge-{% if lancamento.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                                {{ lancamento.tipo }}
+                            </span>
+                        </td>
+                        <td>{{ lancamento.descricao }}</td>
+                        <td>{{ lancamento.categoria.nome }}</td>
+                        <td>{{ lancamento.fornecedor.nome }}</td>
+                        <td class="{% if lancamento.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
+                            {% if lancamento.tipo == 'ENTRADA' %}+{% else %}-{% endif %}R$ {{ lancamento.valor }}
+                        </td>
+                        <td class="text-center">
+                            <div class="flex gap-2 justify-center">
+                                <a href="{% url 'editar_lancamento' lancamento.id %}" class="btn btn-warning btn-sm">
+                                    ✏️ Editar
+                                </a>
+                                <a href="{% url 'deletar_lancamento' lancamento.id %}" class="btn btn-danger btn-sm">
+                                    🗑️ Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📊</div>
+                                <h3 class="font-semibold mb-2">Nenhum lançamento encontrado</h3>
+                                <p class="text-secondary mb-4">Comece adicionando seu primeiro lançamento financeiro.</p>
+                                <a href="{% url 'adicionar_lancamento' %}" class="btn btn-primary">
+                                    ➕ Adicionar Primeiro Lançamento
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

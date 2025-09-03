@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Detalhes do Caixa - {{ caixa.data_abertura|date:'d/m/Y H:i' }}</h2>
+
+  <p><strong>Data de Abertura:</strong> {{ caixa.data_abertura|date:'d/m/Y H:i' }}</p>
+  <p><strong>Data de Fechamento:</strong> {% if caixa.data_fechamento %}{{ caixa.data_fechamento|date:'d/m/Y H:i' }}{% else %}Aberto{% endif %}</p>
+  <p><strong>Saldo Inicial em Dinheiro:</strong> R$ {{ caixa.saldo_inicial_dinheiro|floatformat:2 }}</p>
+  <p><strong>Saldo Final em Dinheiro:</strong> R$ {{ caixa.saldo_final_dinheiro|floatformat:2 }}</p>
+  <p><strong>Total Entradas Dinheiro:</strong> R$ {{ caixa.total_entradas_dinheiro|floatformat:2 }}</p>
+  <p><strong>Total Saídas Dinheiro:</strong> R$ {{ caixa.total_saidas_dinheiro|floatformat:2 }}</p>
+  <p><strong>Total Entradas Cartão de Crédito:</strong> R$ {{ caixa.total_entradas_cartao_credito|floatformat:2 }}</p>
+  <p><strong>Total Saídas Cartão de Crédito:</strong> R$ {{ caixa.total_saidas_cartao_credito|floatformat:2 }}</p>
+  <p><strong>Total Entradas PIX:</strong> R$ {{ caixa.total_entradas_pix|floatformat:2 }}</p>
+  <p><strong>Total Saídas PIX:</strong> R$ {{ caixa.total_saidas_pix|floatformat:2 }}</p>
+  <p><strong>Total Entradas Caderno:</strong> R$ {{ caixa.total_entradas_caderno|floatformat:2 }}</p>
+  <p><strong>Total Saídas Caderno:</strong> R$ {{ caixa.total_saidas_caderno|floatformat:2 }}</p>
+  <p><strong>Observações:</strong> {{ caixa.observacoes|default_if_none:"Nenhuma" }}</p>
+
+  <h3>Movimentações do Caixa</h3>
+  {% if caixa.movimentacoes.all %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Método de Pagamento</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mov in caixa.movimentacoes.all %}
+          <tr>
+            <td>{{ mov.data|date:'d/m/Y H:i' }}</td>
+            <td>{{ mov.get_tipo_movimentacao_display }}</td>
+            <td>R$ {{ mov.valor|floatformat:2 }}</td>
+            <td>{{ mov.get_metodo_pagamento_display }}</td>
+            <td>{{ mov.descricao }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Nenhuma movimentação registrada para este caixa.</p>
+  {% endif %}
+
+  <a href="{% url 'lista_caixas' %}" class="btn btn-secondary">Voltar para Lista de Caixas</a>
+{% endblock %}
+
+

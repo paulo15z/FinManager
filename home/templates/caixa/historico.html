@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico do Caixa{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📊 Histórico de Movimentações do Caixa</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo de Movimentação</th>
+                        <th>Valor</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimentacao in movimentacoes %}
+                    <tr>
+                        <td>{{ movimentacao.data|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge badge-{% if movimentacao.tipo_movimentacao == 'entrada' or movimentacao.tipo_movimentacao == 'injetar_dinheiro' or movimentacao.tipo_movimentacao == 'estorno_saida' %}success{% else %}danger{% endif %}">
+                                {{ movimentacao.get_tipo_movimentacao_display }}
+                            </span>
+                        </td>
+                        <td class="{% if movimentacao.tipo_movimentacao == 'entrada' or movimentacao.tipo_movimentacao == 'injetar_dinheiro' or movimentacao.tipo_movimentacao == 'estorno_saida' %}text-success{% else %}text-danger{% endif %}">
+                            {% if movimentacao.tipo_movimentacao == 'entrada' or movimentacao.tipo_movimentacao == 'injetar_dinheiro' or movimentacao.tipo_movimentacao == 'estorno_saida' %}+{% else %}-{% endif %} R$ {{ movimentacao.valor|stringformat:".2f" }}
+                        </td>
+                        <td>{{ movimentacao.descricao|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma movimentação registrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                {% endif %}
+                <li class="page-item active"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Abrir Caixa</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="saldo_inicial">Saldo Inicial em Dinheiro</label>
+      <input type="number" name="saldo_inicial" id="saldo_inicial" class="form-control" step="0.01" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Abrir Caixa</button>
+  </form>
+{% endblock %}
+
+
