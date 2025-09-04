@@ -9,7 +9,7 @@ urlpatterns = [
     # A URL vazia '' indica que as rotas de 'home' serão acessadas
     # diretamente após o domínio, por exemplo: meuprojeto.com/adicionar-lancamento
     path('', include('home.urls')),
-
+    path('relatorios/', include('relatorios.urls'))
     # Se você tivesse outro app, por exemplo 'relatorios', a sintaxe seria:
     # path('relatorios/', include('relatorios.urls')),
     # que resultaria em URLs como: meuprojeto.com/relatorios/mensal/

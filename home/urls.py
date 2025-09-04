@@ -5,8 +5,7 @@ from .views import (
     FornecedorListView, FornecedorCreateView, FornecedorUpdateView, FornecedorDeleteView,
     CategoriaListView, CategoriaCreateView, CategoriaUpdateView, CategoriaDeleteView,
     CofrinhoListView, CofrinhoCreateView, CofrinhoUpdateView, CofrinhoDeleteView,
-    TransferirParaCofrinhoView,
-    RelatorioEntradasSaidasView
+    TransferirParaCofrinhoView
 )
 
 urlpatterns = [
@@ -39,5 +38,5 @@ urlpatterns = [
     path('categorias/deletar/<int:pk>/', CategoriaDeleteView.as_view(), name='deletar_categoria'),
 
     # Rotas de Relatórios
-    path('relatorios/entradas-saidas/', RelatorioEntradasSaidasView.as_view(), name='relatorio_entradas_saidas'),
+    
 ]
