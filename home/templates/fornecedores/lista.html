@@ -19,8 +19,8 @@
                 <td>{{ fornecedor.cnpj|default:"-" }}</td>
                 <td>{{ fornecedor.contato|default:"-" }}</td>
                 <td>
-                    <a href="{% url 'editar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'deletar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-danger">Excluir</a>
+                    <a href="{% url 'editar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                    <a href="{% url 'deletar_fornecedor' fornecedor.id %}" class="btn btn-sm btn-danger">🗑️ Excluir</a>
                 </td>
             </tr>
             {% empty %}

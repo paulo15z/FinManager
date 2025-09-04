@@ -29,7 +29,7 @@
                         <td>{{ categoria.nome }}</td>
                         <td>{{ categoria.descricao|default:"-" }}</td>
                         <td>
-                            <span class="badge badge-{% if categoria.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                            <span class="badge badge-{% if categoria.tipo == 'entrada' %}success{% else %}danger{% endif %}">
                                 {{ categoria.tipo }}
                             </span>
                         </td>

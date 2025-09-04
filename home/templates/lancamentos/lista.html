@@ -62,15 +62,15 @@
                     <tr>
                         <td>{{ lancamento.data|date:"d/m/Y" }}</td>
                         <td>
-                            <span class="badge badge-{% if lancamento.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                            <span class="badge badge-{% if lancamento.tipo == 'entrada' %}success{% else %}danger{% endif %}">
                                 {{ lancamento.tipo }}
                             </span>
                         </td>
                         <td>{{ lancamento.descricao }}</td>
                         <td>{{ lancamento.categoria.nome }}</td>
                         <td>{{ lancamento.fornecedor.nome }}</td>
-                        <td class="{% if lancamento.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
-                            {% if lancamento.tipo == 'ENTRADA' %}+{% else %}-{% endif %}R$ {{ lancamento.valor }}
+                        <td class="{% if lancamento.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                            {% if lancamento.tipo == 'entrada' %}+{% else %}-{% endif %}R$ {{ lancamento.valor }}
                         </td>
                         <td class="text-center">
                             <div class="flex gap-2 justify-center">

@@ -40,8 +40,8 @@
                             {% endif %}
                         </td>
                         <td class="flex gap-2">
-                            <a href="{% url 'editar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-outline btn-warning">Editar</a>
-                            <a href="{% url 'deletar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-outline btn-danger">Excluir</a>
+                            <a href="{% url 'editar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                            <a href="{% url 'deletar_cofrinho' cofrinho.id %}" class="btn btn-sm btn-danger">🗑️ Excluir</a>
                         </td>
                     </tr>
                     {% empty %}

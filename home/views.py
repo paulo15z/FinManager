@@ -12,7 +12,7 @@ from django.db.models.functions import TruncWeek
 from django.db.models import F
 
 
-from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm
+from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm, TransferirParaCofrinhoForm
 
 # --- Views de Lançamentos ---
 class LancamentoListView(ListView):
@@ -294,7 +294,7 @@ class RelatorioEntradasSaidasView(TemplateView):
                 ).order_by('semana')
 
                 for semana in lancamentos_semanais:
-                    data_inicio_semana = semana['semana'].date()
+                    data_inicio_semana = semana['semana']
                     data_fim_semana = data_inicio_semana + timedelta(days=6)
                     saldo_semana = (semana['total_entradas'] or 0) - (semana['total_saidas'] or 0)
                     resumo_semanal.append({
