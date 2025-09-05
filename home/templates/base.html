@@ -9,13 +9,218 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos para o menu hambúrguer */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+            background: none;
+            border: none;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        /* Overlay para fechar o menu ao clicar fora */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .nav-overlay.active {
+            display: block;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background-color: #fff;
+                flex-direction: column;
+                padding: 80px 20px 20px;
+                box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+                transition: right 0.3s ease;
+                z-index: 1000;
+                overflow-y: auto;
+            }
+
+            .nav.active {
+                right: 0;
+            }
+
+            .nav-link {
+                display: block;
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+                text-decoration: none;
+                color: #333;
+                font-weight: 500;
+                transition: color 0.3s ease;
+            }
+
+            .nav-link:hover {
+                color: #007bff;
+            }
+
+            .nav-link.active {
+                color: #007bff;
+                font-weight: 600;
+            }
+
+            .nav-link:last-child {
+                border-bottom: none;
+            }
+
+            /* Ajustar o header para mobile */
+            .header-content {
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Estilos base para desktop (caso não existam no CSS principal) */
+        .header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .nav-link.active {
+            color: #007bff;
+            background-color: #e3f2fd;
+        }
+
+        .main {
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
                 <a href="{% url 'home' %}" class="logo">💰 Gerente Financeiro</a>
-                <nav class="nav">
+                
+                <!-- Botão hambúrguer -->
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- Overlay para fechar o menu -->
+                <div class="nav-overlay" id="navOverlay"></div>
+
+                <nav class="nav" id="nav">
                     <a href="{% url 'lista_lancamentos' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_lancamentos' %}active{% endif %}">
                         📊 Lançamentos
                     </a>
@@ -56,6 +261,49 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidade do menu hambúrguer
+            const hamburger = document.getElementById('hamburger');
+            const nav = document.getElementById('nav');
+            const navOverlay = document.getElementById('navOverlay');
+
+            function toggleMenu() {
+                hamburger.classList.toggle('active');
+                nav.classList.toggle('active');
+                navOverlay.classList.toggle('active');
+                
+                // Prevenir scroll do body quando o menu estiver aberto
+                if (nav.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function closeMenu() {
+                hamburger.classList.remove('active');
+                nav.classList.remove('active');
+                navOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Event listeners
+            hamburger.addEventListener('click', toggleMenu);
+            navOverlay.addEventListener('click', closeMenu);
+
+            // Fechar menu ao clicar em um link (útil em SPAs)
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
+
+            // Fechar menu ao redimensionar a tela (caso o usuário gire o dispositivo)
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMenu();
+                }
+            });
+
+            // Funcionalidade original de confirmação de exclusão
             const deleteButtons = document.querySelectorAll('[href*="deletar"]');
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -68,5 +316,4 @@
     </script>
 </body>
 </html>
-
 
