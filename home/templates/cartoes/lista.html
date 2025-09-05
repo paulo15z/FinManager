@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Cartões de Crédito - Gerente Financeiro{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-bold">💳 Cartões de Crédito</h1>
+    <a href="{% url 'adicionar_cartao' %}" class="btn btn-primary">+ Adicionar Cartão</a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Limite Total</th>
+                    <th>Limite Disponível</th>
+                    <th>% Usado</th>
+                    <th>Gasto Mês Atual</th>
+                    <th>Vencimento</th>
+                    <th>Fechamento</th>
+                    <th>Ativo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cartao in cartoes %}
+                <tr>
+                    <td>{{ cartao.nome }}</td>
+                    <td>R$ {{ cartao.limite_total|stringformat:".2f" }}</td>
+                    <td>R$ {{ cartao.limite_disponivel|stringformat:".2f" }}</td>
+                    <td>{{ cartao.percentual_usado_valor|floatformat:0 }}%</td>
+                    <td>R$ {{ cartao.gasto_mes_atual|stringformat:".2f" }}</td>
+                    <td>Dia {{ cartao.dia_vencimento }}</td>
+                    <td>Dia {{ cartao.dia_fechamento }}</td>
+                    <td>
+                        {% if cartao.ativo %}
+                            <span class="badge badge-success">Sim</span>
+                        {% else %}
+                            <span class="badge badge-danger">Não</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'detalhes_cartao' pk=cartao.pk %}" class="btn btn-info btn-sm">Detalhes</a>
+                        <a href="{% url 'editar_cartao' pk=cartao.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'deletar_cartao' pk=cartao.pk %}" class="btn btn-danger btn-sm">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-secondary">
+                        Nenhum cartão de crédito cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+

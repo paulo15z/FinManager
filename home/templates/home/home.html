@@ -116,4 +116,51 @@
         </div>
     </div>
 </div>
+
+<div class="card mt-6">
+    <div class="card-header">
+        <h2 class="card-title">💳 Cartões de Crédito</h2>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Limite Total</th>
+                    <th>Limite Disponível</th>
+                    <th>% Usado</th>
+                    <th>Gasto Mês Atual</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cartao in cartoes_credito %}
+                <tr>
+                    <td>{{ cartao.nome }}</td>
+                    <td>R$ {{ cartao.limite_total|stringformat:".2f" }}</td>
+                    <td>R$ {{ cartao.limite_disponivel|stringformat:".2f" }}</td>
+                    <td>{{ cartao.percentual_usado_valor|floatformat:0 }}%</td>
+                    <td>R$ {{ cartao.gasto_mes_atual|stringformat:".2f" }}</td>
+                    <td>
+                        <a href="{% url 'detalhes_cartao' pk=cartao.pk %}" class="btn btn-info btn-sm">Detalhes</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-secondary">
+                        Nenhum cartão de crédito cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-body text-right">
+        <a href="{% url 'lista_cartoes' %}" class="btn btn-outline btn-sm">
+            Gerenciar Cartões →
+        </a>
+    </div>
+</div>
 {% endblock %}
+
+

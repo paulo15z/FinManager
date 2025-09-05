@@ -4,8 +4,8 @@ from .views import (
     LancamentoListView, LancamentoCreateView, LancamentoUpdateView, LancamentoDeleteView,
     FornecedorListView, FornecedorCreateView, FornecedorUpdateView, FornecedorDeleteView,
     CategoriaListView, CategoriaCreateView, CategoriaUpdateView, CategoriaDeleteView,
-    CofrinhoListView, CofrinhoCreateView, CofrinhoUpdateView, CofrinhoDeleteView,
-    TransferirParaCofrinhoView
+    CofrinhoListView, CofrinhoCreateView, CofrinhoUpdateView, CofrinhoDeleteView, TransferirParaCofrinhoView,
+    TransferirParaCofrinhoView, CartaoCreditoCreateView, CartaoCreditoDeleteView, CartaoCreditoDetailView, CartaoCreditoListView, CartaoCreditoUpdateView, ResetarLimiteCartaoView
 )
 
 urlpatterns = [
@@ -37,6 +37,13 @@ urlpatterns = [
     path('categorias/editar/<int:pk>/', CategoriaUpdateView.as_view(), name='editar_categoria'),
     path('categorias/deletar/<int:pk>/', CategoriaDeleteView.as_view(), name='deletar_categoria'),
 
-    # Rotas de Relatórios
+    # Rotas de cartao de credito
+
+    path('cartoes/', CartaoCreditoListView.as_view(), name='lista_cartoes'),
+    path('cartoes/adicionar/', CartaoCreditoCreateView.as_view(), name='adicionar_cartao'),
+    path('cartoes/<int:pk>/editar/', CartaoCreditoUpdateView.as_view(), name='editar_cartao'),
+    path('cartoes/<int:pk>/deletar/', CartaoCreditoDeleteView.as_view(), name='deletar_cartao'),
+    path('cartoes/<int:pk>/detalhes/', CartaoCreditoDetailView.as_view(), name='detalhes_cartao'),
+    path('cartoes/<int:pk>/resetar-limite/', ResetarLimiteCartaoView.as_view(), name='resetar_limite_cartao'),
     
 ]

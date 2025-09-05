@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Lançamento - Gerente Financeiro{% endblock %}
+{% block title %}Editar Cartão de Crédito - Gerente Financeiro{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">✏️ Editar Lançamento</h2>
+        <h2 class="card-title">✏️ Editar Cartão de Crédito</h2>
     </div>
     <div class="card-body">
         <form method="post" class="form-container">
@@ -17,6 +17,9 @@
                     {{ field.label }}
                 </label>
                 {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
                 {% if field.errors %}
                     <div class="text-danger text-sm mt-1">
                         {{ field.errors.0 }}
@@ -24,39 +27,18 @@
                 {% endif %}
             </div>
             {% endfor %}
-            
+
             <div class="form-actions">
-                <a href="{% url 'lista_lancamentos' %}" class="btn btn-outline">
+                <a href="{% url 'lista_cartoes' %}" class="btn btn-outline">
                     Cancelar
                 </a>
                 <button type="submit" class="btn btn-warning">
-                    💾 Atualizar Lançamento
+                    💾 Atualizar Cartão
                 </button>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var metodoPagamentoSelect = document.getElementById('id_metodo_pagamento');
-    var cartaoCreditoGroup = document.getElementById('id_cartao_credito').closest('.form-group');
-
-    function toggleCartaoCreditoField() {
-        if (metodoPagamentoSelect.value === 'cartao_credito') {
-            cartaoCreditoGroup.style.display = 'block';
-        } else {
-            cartaoCreditoGroup.style.display = 'none';
-        }
-    }
-
-    // Initial state
-    toggleCartaoCreditoField();
-
-    // Listen for changes
-    metodoPagamentoSelect.addEventListener('change', toggleCartaoCreditoField);
-});
-</script>
 {% endblock %}
 
 

@@ -28,6 +28,9 @@
                     <a href="{% url 'lista_categorias' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_categorias' %}active{% endif %}">
                         🏦 Categorias
                      </a>
+                    <a href="{% url 'lista_cartoes' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_cartoes' %}active{% endif %}">
+                        💳 Cartões
+                    </a>
                     <a href="{% url 'relatorio_entradas_saidas' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorio_entradas_saidas' %}active{% endif %}">
                         📈 Relatórios
                     </a>
@@ -65,3 +68,5 @@
     </script>
 </body>
 </html>
+
+

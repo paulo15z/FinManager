@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Cartão - {{ cartao.nome }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-xl font-bold">💳 Detalhes do Cartão: {{ cartao.nome }}</h1>
+    <a href="{% url 'lista_cartoes' %}" class="btn btn-outline">← Voltar para Cartões</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">R$ {{ cartao.limite_total|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Limite Total</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-success">R$ {{ cartao.limite_disponivel|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Limite Disponível</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold text-danger">R$ {{ limite_usado_valor|stringformat:".2f" }}</div>
+            <div class="text-sm text-secondary">Limite Usado</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Informações do Cartão</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Nome:</strong> {{ cartao.nome }}</p>
+            <p><strong>Dia de Vencimento:</strong> Dia {{ cartao.dia_vencimento }}</p>
+            <p><strong>Dia de Fechamento:</strong> Dia {{ cartao.dia_fechamento }}</p>
+            <p><strong>Ativo:</strong> {% if cartao.ativo %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Observações:</strong> {{ cartao.observacoes|default:"Nenhuma" }}</p>
+            {% if proximo_vencimento %}
+                <p><strong>Próximo Vencimento:</strong> {{ proximo_vencimento|date:"d/m/Y" }}</p>
+            {% else %}
+                <p><strong>Próximo Vencimento:</strong> Não definido ou inválido</p>
+            {% endif %}
+            <div class="mt-4">
+                <form method="post" action="{% url 'resetar_limite_cartao' pk=cartao.pk %}" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Tem certeza que deseja resetar o limite deste cartão? Isso simulará o pagamento da fatura.');">
+                        Resetar Limite (Pagar Fatura)
+                    </button>
+                </form>
+                <a href="{% url 'editar_cartao' pk=cartao.pk %}" class="btn btn-warning btn-sm">Editar Cartão</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Estatísticas e Lançamentos</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Percentual Usado:</strong> {{ percentual_usado_valor|floatformat:0 }}%</p>
+            <p><strong>Gasto Mês Atual:</strong> R$ {{ gasto_mes_atual|stringformat:".2f" }}</p>
+            
+            <h3 class="text-lg font-semibold mt-4">Últimos Lançamentos com este Cartão</h3>
+            <div class="table-container mt-2">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lancamento in lancamentos %}
+                        <tr>
+                            <td>{{ lancamento.data|date:"d/m/Y" }}</td>
+                            <td>{{ lancamento.descricao }}</td>
+                            <td class="font-semibold text-danger">-R$ {{ lancamento.valor|stringformat:".2f" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-secondary">
+                                Nenhum lançamento encontrado para este cartão.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

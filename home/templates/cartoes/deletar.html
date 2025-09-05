@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Cartão de Crédito{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Confirmar Exclusão de Cartão</h2>
+    </div>
+    <div class="card-body">
+        {% if lancamentos_associados %}
+            <div class="alert alert-danger">
+                Não é possível excluir o cartão <strong>"{{ cartao.nome }}"</strong> pois existem {{ lancamentos_associados }} lançamentos associados a ele.
+                Por favor, exclua ou altere o método de pagamento dos lançamentos antes de tentar excluir este cartão.
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'lista_cartoes' %}" class="btn btn-secondary">Voltar para Cartões</a>
+            </div>
+        {% else %}
+            <p class="mb-4">Você tem certeza que deseja excluir o cartão <strong>"{{ cartao.nome }}"</strong>?</p>
+            
+            <form method="post" class="form-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+                <a href="{% url 'lista_cartoes' %}" class="btn btn-secondary">Não, Cancelar</a>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
