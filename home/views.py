@@ -11,7 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models.functions import TruncWeek
 from django.db.models import F
-
+from decimal import Decimal
 
 from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm, TransferirParaCofrinhoForm, CartaoCreditoForm
 
@@ -24,13 +24,29 @@ class LancamentoListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        lancamentos = self.get_queryset()
-        lancamentos_nao_cartao = lancamentos.exclude(metodo_pagamento='cartao_credito')
-        context['total_entradas'] = sum(l.valor for l in lancamentos_nao_cartao if l.tipo == 'entrada')
-        context['total_saidas'] = sum(l.valor for l in lancamentos_nao_cartao if l.tipo == 'saida')
-        context['saldo_total'] = context['total_entradas'] - context['total_saidas']
         
-        # Adicionar informações sobre cartões de crédito
+        # Usar o queryset completo para os cálculos
+        todos_lancamentos = self.get_queryset()
+
+        # LÓGICA CORRIGIDA:
+        # 1. Total de Entradas: Soma TODAS as entradas, independentemente do método de pagamento.
+        total_entradas = todos_lancamentos.filter(tipo='entrada').aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+        # 2. Total de Saídas para o Saldo: Soma apenas as saídas que NÃO são no cartão de crédito.
+        total_saidas_saldo = todos_lancamentos.filter(
+            tipo='saida'
+        ).exclude(
+            metodo_pagamento='cartao_credito'
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+        # 3. Calcula o saldo com base nas regras corretas.
+        saldo_total = total_entradas - total_saidas_saldo
+
+        context['total_entradas'] = total_entradas
+        context['total_saidas'] = total_saidas_saldo # Mostra apenas as saídas que afetam o saldo
+        context['saldo_total'] = saldo_total
+        
+        # Adicionar informações sobre cartões de crédito (isso permanece igual)
         context['cartoes_credito'] = CartaoCredito.objects.filter(ativo=True)
         
         return context
@@ -41,20 +57,38 @@ class LancamentoCreateView(CreateView):
     template_name = 'lancamentos/adicionar.html'
     success_url = reverse_lazy('lista_lancamentos')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Adicionar cartões ativos para o formulário
-        context['cartoes_credito'] = CartaoCredito.objects.filter(ativo=True)
-        return context
-
     def form_valid(self, form):
-        try:
-            response = super().form_valid(form)
-            messages.success(self.request, 'Lançamento adicionado com sucesso!')
-            return response
-        except ValidationError as e:
-            messages.error(self.request, str(e))
-            return self.form_invalid(form)
+        lancamento = form.save(commit=False)
+        
+        # A LÓGICA AGORA VIVE AQUI!
+        # Só executa a lógica de limite se for uma SAÍDA com cartão de crédito.
+        if lancamento.tipo == 'saida' and lancamento.metodo_pagamento == 'cartao_credito':
+            try:
+                cartao = lancamento.cartao_credito
+                valor = lancamento.valor
+                
+                # Verifica o limite antes de tentar salvar
+                if not cartao.tem_limite_disponivel(valor):
+                    messages.error(self.request, f"Limite insuficiente no cartão {cartao.nome}.")
+                    return self.form_invalid(form)
+
+                # Garante que ambas as operações (salvar e usar limite) funcionem
+                with transaction.atomic():
+                    cartao.usar_limite(valor)
+                    lancamento.save()
+                
+                messages.success(self.request, 'Lançamento de saída no cartão adicionado com sucesso!')
+                return redirect(self.success_url)
+
+            except ValidationError as e:
+                messages.error(self.request, str(e))
+                return self.form_invalid(form)
+        
+        # Para todos os outros casos (entradas, outras formas de pagamento),
+        # apenas salva o lançamento normalmente.
+        lancamento.save()
+        messages.success(self.request, 'Lançamento adicionado com sucesso!')
+        return redirect(self.success_url)
 
 class LancamentoUpdateView(UpdateView):
     model = Lancamento
@@ -62,17 +96,25 @@ class LancamentoUpdateView(UpdateView):
     template_name = 'lancamentos/editar.html'
     success_url = reverse_lazy('lista_lancamentos')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Adicionar cartões ativos para o formulário
-        context['cartoes_credito'] = CartaoCredito.objects.filter(ativo=True)
-        return context
-
     def form_valid(self, form):
+        novo_lancamento = form.save(commit=False)
+        antigo_lancamento = Lancamento.objects.get(pk=self.object.pk)
+
         try:
-            response = super().form_valid(form)
+            with transaction.atomic():
+                # 1. Reverte o efeito do lançamento antigo, SE ele era uma saída no cartão.
+                if antigo_lancamento.tipo == 'saida' and antigo_lancamento.metodo_pagamento == 'cartao_credito':
+                    antigo_lancamento.cartao_credito.liberar_limite(antigo_lancamento.valor)
+
+                # 2. Aplica o efeito do novo lançamento, SE ele é uma saída no cartão.
+                if novo_lancamento.tipo == 'saida' and novo_lancamento.metodo_pagamento == 'cartao_credito':
+                    novo_lancamento.cartao_credito.usar_limite(novo_lancamento.valor)
+                
+                # Salva o objeto no banco de dados
+                novo_lancamento.save()
+
             messages.success(self.request, 'Lançamento atualizado com sucesso!')
-            return response
+            return redirect(self.success_url)
         except ValidationError as e:
             messages.error(self.request, str(e))
             return self.form_invalid(form)
@@ -83,6 +125,22 @@ class LancamentoDeleteView(DeleteView):
     success_url = reverse_lazy('lista_lancamentos')
 
     def form_valid(self, form):
+        lancamento = self.get_object()
+
+        # Libera o limite APENAS se for uma SAÍDA de cartão de crédito
+        if lancamento.tipo == 'saida' and lancamento.metodo_pagamento == 'cartao_credito':
+            try:
+                with transaction.atomic():
+                    lancamento.cartao_credito.liberar_limite(lancamento.valor)
+                    # A exclusão ocorre depois da liberação do limite
+                    response = super().form_valid(form)
+                messages.success(self.request, 'Lançamento excluído e limite do cartão restaurado!')
+                return response
+            except Exception as e:
+                messages.error(self.request, f"Erro ao excluir: {e}")
+                return redirect(self.success_url)
+
+        # Para todos os outros casos, apenas deleta
         response = super().form_valid(form)
         messages.success(self.request, 'Lançamento excluído com sucesso!')
         return response
@@ -402,11 +460,20 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        ultimos_lancamentos = Lancamento.objects.all().order_by("-data")[:5]
-        total_entradas = Lancamento.objects.filter(tipo="entrada").exclude(metodo_pagamento='cartao_credito').aggregate(Sum("valor"))["valor__sum"] or 0
-        total_saidas = Lancamento.objects.filter(tipo="saida").exclude(metodo_pagamento='cartao_credito').aggregate(Sum("valor"))["valor__sum"] or 0
+                
+        total_entradas = Lancamento.objects.filter(
+            tipo="entrada"
+        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00')
+
+        total_saidas = Lancamento.objects.filter(
+            tipo="saida"
+        ).exclude(
+            metodo_pagamento='cartao_credito'
+        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00')
+
         saldo_total = total_entradas - total_saidas
         
+        ultimos_lancamentos = Lancamento.objects.order_by("-data")[:5]
         cofrinhos = Cofrinho.objects.all()
         for cofrinho in cofrinhos:
             if cofrinho.meta > 0:
@@ -419,7 +486,6 @@ class HomeView(TemplateView):
             total_saidas=Sum('valor', filter=models.Q(tipo='saida'))
         )
         
-        # Adicionar informações dos cartões de crédito na home
         cartoes_credito = CartaoCredito.objects.filter(ativo=True)
         for cartao in cartoes_credito:
             cartao.limite_usado_valor = cartao.limite_usado()

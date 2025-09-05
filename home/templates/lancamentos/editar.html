@@ -12,7 +12,7 @@
             {% csrf_token %}
             
             {% for field in form %}
-            <div class="form-group">
+            <div class="form-group" id="div_{{ field.auto_id }}">
                 <label for="{{ field.id_for_label }}" class="form-label">
                     {{ field.label }}
                 </label>
@@ -36,27 +36,49 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var metodoPagamentoSelect = document.getElementById('id_metodo_pagamento');
-    var cartaoCreditoGroup = document.getElementById('id_cartao_credito').closest('.form-group');
+    // 1. Encontra os campos de controle e o campo a ser controlado
+    const tipoField = document.getElementById('id_tipo');
+    const metodoPagamentoField = document.getElementById('id_metodo_pagamento');
+    const cartaoCreditoContainer = document.getElementById('div_id_cartao_credito');
 
+    // 2. Função que contém a lógica para mostrar ou esconder o campo
     function toggleCartaoCreditoField() {
-        if (metodoPagamentoSelect.value === 'cartao_credito') {
-            cartaoCreditoGroup.style.display = 'block';
+        // Pega os valores atuais dos campos de controle
+        const tipoSelecionado = tipoField.value;
+        const metodoSelecionado = metodoPagamentoField.value;
+
+        // A condição principal: SÓ mostra se for SAÍDA E CARTÃO DE CRÉDITO
+        if (tipoSelecionado === 'saida' && metodoSelecionado === 'cartao_credito') {
+            if (cartaoCreditoContainer) {
+                cartaoCreditoContainer.style.display = 'block'; // Mostra o campo
+            }
         } else {
-            cartaoCreditoGroup.style.display = 'none';
+            if (cartaoCreditoContainer) {
+                cartaoCreditoContainer.style.display = 'none'; // Esconde o campo
+                // Opcional: Limpa o valor do cartão se ele for escondido, para evitar envios acidentais
+                const cartaoSelect = document.getElementById('id_cartao_credito');
+                if (cartaoSelect) {
+                    cartaoSelect.value = '';
+                }
+            }
         }
     }
 
-    // Initial state
-    toggleCartaoCreditoField();
+    // 3. Adiciona "escutadores" de eventos para os campos de controle
+    if (tipoField) {
+        tipoField.addEventListener('change', toggleCartaoCreditoField);
+    }
+    if (metodoPagamentoField) {
+        metodoPagamentoField.addEventListener('change', toggleCartaoCreditoField);
+    }
 
-    // Listen for changes
-    metodoPagamentoSelect.addEventListener('change', toggleCartaoCreditoField);
+    // 4. Executa a função uma vez no carregamento da página para definir o estado inicial correto
+    toggleCartaoCreditoField();
 });
 </script>
 {% endblock %}
-
-

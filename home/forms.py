@@ -10,22 +10,6 @@ class CategoriaForm(forms.ModelForm):
             'descricao': 'Descrição'
         }
 
-""" 
-class LancamentoForm(forms.ModelForm):
-    class Meta:
-        model = Lancamento
-        fields = '__all__'
-        widgets = {
-            'data': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-    def clean_valor(self):
-        valor = self.cleaned_data['valor']
-        if valor <= 0:
-            raise forms.ValidationError("O valor deve ser maior que zero.")
-        return valor    
-    """
-
 class LancamentoForm(forms.ModelForm):
     class Meta:
         model = Lancamento
@@ -39,36 +23,41 @@ class LancamentoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtrar apenas cartões ativos
         self.fields['cartao_credito'].queryset = CartaoCredito.objects.filter(ativo=True)
+        # O campo cartão de crédito não é obrigatório por padrão.
+        # Nossa lógica no `clean` e o JS no template vão controlar isso.
+        self.fields['cartao_credito'].required = False
         
-        # Adicionar classes CSS
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
     
     def clean(self):
+        """
+        ÚNICA FONTE DE VALIDAÇÃO para a lógica do cartão de crédito.
+        """
         cleaned_data = super().clean()
+        tipo = cleaned_data.get('tipo')
         metodo_pagamento = cleaned_data.get('metodo_pagamento')
         cartao_credito = cleaned_data.get('cartao_credito')
-        tipo = cleaned_data.get('tipo')
         valor = cleaned_data.get('valor')
+
+        # A validação agora depende do TIPO.
+        if tipo == 'saida' and metodo_pagamento == 'cartao_credito':
+            # 1. Se for uma saída no cartão, o campo 'cartao_credito' é obrigatório.
+            if not cartao_credito:
+                self.add_error('cartao_credito', "Para uma saída no cartão, você deve selecionar o cartão.")
+
+            # 2. Se o cartão foi selecionado, verifica o limite.
+            elif valor and not cartao_credito.tem_limite_disponivel(valor):
+                # Usamos add_error para não parar outras validações
+                self.add_error(None, 
+                    f"Limite insuficiente no cartão {cartao_credito.nome}. "
+                    f"Disponível: R$ {cartao_credito.limite_disponivel}, "
+                    f"Solicitado: R$ {valor}"
+                )
         
-        # Validação: se método é cartão de crédito, cartão deve ser informado
-        if metodo_pagamento == 'cartao_credito' and not cartao_credito:
-            raise forms.ValidationError("Cartão de crédito deve ser selecionado quando o método de pagamento for 'Cartão de Crédito'")
-        
-        # Validação: se cartão informado, método deve ser cartão de crédito
-        if cartao_credito and metodo_pagamento != 'cartao_credito':
-            raise forms.ValidationError("Método de pagamento deve ser 'Cartão de Crédito' quando um cartão for selecionado")
-        
-        # Validação: verificar limite disponível para saídas
-        if (tipo == 'saida' and metodo_pagamento == 'cartao_credito' and 
-            cartao_credito and valor and not cartao_credito.tem_limite_disponivel(valor)):
-            raise forms.ValidationError(
-                f"Limite insuficiente no cartão {cartao_credito.nome}. "
-                f"Disponível: R$ {cartao_credito.limite_disponivel}, "
-                f"Solicitado: R$ {valor}"
-            )
+        # Se for uma ENTRADA, nenhuma dessas validações é acionada, permitindo
+        # que o campo 'cartao_credito' fique vazio, como esperado.
         
         return cleaned_data
 
