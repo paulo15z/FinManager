@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos para o menu hambúrguer */
+        /* ===== MENU HAMBÚRGUER ===== */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -42,7 +42,6 @@
             transform: rotate(45deg) translate(-5px, -6px);
         }
 
-        /* Overlay para fechar o menu ao clicar fora */
         .nav-overlay {
             display: none;
             position: fixed;
@@ -58,8 +57,125 @@
             display: block;
         }
 
-        /* Responsividade */
+        /* ===== TABELAS RESPONSIVAS ===== */
+        
+        /* Cards para Mobile */
+        .mobile-cards {
+            display: none;
+        }
+        
+        .mobile-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-left: 4px solid #007bff;
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mobile-card-date {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .mobile-card-type {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .mobile-card-type.entrada {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .mobile-card-type.saida {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .mobile-card-description {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .mobile-card-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: right;
+            margin-bottom: 1rem;
+        }
+        
+        .mobile-card-value.positive {
+            color: #28a745;
+        }
+        
+        .mobile-card-value.negative {
+            color: #dc3545;
+        }
+        
+        .mobile-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        
+        .mobile-card-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 80px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .mobile-card-btn.edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .mobile-card-btn.delete {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .mobile-card-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Utilitários para mostrar/esconder */
+        .show-mobile {
+            display: none;
+        }
+
+        .show-desktop {
+            display: block;
+        }
+
+        /* ===== RESPONSIVIDADE MOBILE ===== */
         @media (max-width: 768px) {
+            /* Menu Hambúrguer */
             .hamburger {
                 display: flex;
             }
@@ -74,13 +190,19 @@
                 flex-direction: column;
                 padding: 80px 20px 20px;
                 box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-                transition: right 0.3s ease;
+                transition: right 0.3s ease, visibility 0.3s ease;
                 z-index: 1000;
                 overflow-y: auto;
+                /* CORREÇÃO DO CLIQUE FANTASMA */
+                visibility: hidden;
+                pointer-events: none;
             }
 
             .nav.active {
                 right: 0;
+                /* CORREÇÃO DO CLIQUE FANTASMA */
+                visibility: visible;
+                pointer-events: auto;
             }
 
             .nav-link {
@@ -106,7 +228,6 @@
                 border-bottom: none;
             }
 
-            /* Ajustar o header para mobile */
             .header-content {
                 justify-content: space-between;
                 align-items: center;
@@ -115,9 +236,51 @@
             .logo {
                 font-size: 1.2rem;
             }
+
+            /* Tabelas Responsivas */
+            .show-mobile {
+                display: block;
+            }
+            
+            .show-desktop {
+                display: none;
+            }
+            
+            .hide-mobile {
+                display: none;
+            }
+
+            .mobile-cards {
+                display: block;
+            }
+
+            /* Melhorias gerais para mobile */
+            .container {
+                padding: 0 15px;
+            }
+            
+            h1, h2, h3 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .btn, .mobile-card-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .form-control {
+                font-size: 16px;
+                padding: 0.75rem;
+            }
+            
+            .alert {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
         }
 
-        /* Estilos base para desktop (caso não existam no CSS principal) */
+        /* ===== ESTILOS BASE ===== */
         .header {
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -202,6 +365,17 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -211,7 +385,7 @@
                 <a href="{% url 'home' %}" class="logo">💰 Gerente Financeiro</a>
                 
                 <!-- Botão hambúrguer -->
-                <button class="hamburger" id="hamburger">
+                <button class="hamburger" id="hamburger" aria-label="Menu de navegação" aria-expanded="false">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -220,7 +394,7 @@
                 <!-- Overlay para fechar o menu -->
                 <div class="nav-overlay" id="navOverlay"></div>
 
-                <nav class="nav" id="nav">
+                <nav class="nav" id="nav" role="navigation" aria-label="Menu principal">
                     <a href="{% url 'lista_lancamentos' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_lancamentos' %}active{% endif %}">
                         📊 Lançamentos
                     </a>
@@ -271,6 +445,10 @@
                 nav.classList.toggle('active');
                 navOverlay.classList.toggle('active');
                 
+                // Atualizar aria-expanded
+                const isExpanded = nav.classList.contains('active');
+                hamburger.setAttribute('aria-expanded', isExpanded);
+                
                 // Prevenir scroll do body quando o menu estiver aberto
                 if (nav.classList.contains('active')) {
                     document.body.style.overflow = 'hidden';
@@ -283,22 +461,35 @@
                 hamburger.classList.remove('active');
                 nav.classList.remove('active');
                 navOverlay.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
                 document.body.style.overflow = '';
             }
 
             // Event listeners
-            hamburger.addEventListener('click', toggleMenu);
-            navOverlay.addEventListener('click', closeMenu);
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleMenu);
+            }
 
-            // Fechar menu ao clicar em um link (útil em SPAs)
+            if (navOverlay) {
+                navOverlay.addEventListener('click', closeMenu);
+            }
+
+            // Fechar menu ao clicar em um link
             const navLinks = document.querySelectorAll('.nav-link');
             navLinks.forEach(link => {
                 link.addEventListener('click', closeMenu);
             });
 
-            // Fechar menu ao redimensionar a tela (caso o usuário gire o dispositivo)
+            // Fechar menu ao redimensionar a tela
             window.addEventListener('resize', function() {
                 if (window.innerWidth > 768) {
+                    closeMenu();
+                }
+            });
+
+            // Suporte para tecla ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && nav.classList.contains('active')) {
                     closeMenu();
                 }
             });
@@ -316,4 +507,3 @@
     </script>
 </body>
 </html>
-

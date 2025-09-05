@@ -1,0 +1,289 @@
+/* Otimização de Tabelas para Mobile */
+
+/* Abordagem 1: Cards Responsivos (Recomendada) */
+@media (max-width: 768px) {
+    /* Esconder tabela tradicional em mobile */
+    .table-responsive {
+        display: none;
+    }
+    
+    /* Mostrar versão em cards */
+    .mobile-cards {
+        display: block;
+    }
+    
+    .mobile-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .mobile-card-date {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .mobile-card-type {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .mobile-card-type.entrada {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .mobile-card-type.saida {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .mobile-card-description {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .mobile-card-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: right;
+        margin-bottom: 1rem;
+    }
+    
+    .mobile-card-value.positive {
+        color: #28a745;
+    }
+    
+    .mobile-card-value.negative {
+        color: #dc3545;
+    }
+    
+    .mobile-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .mobile-card-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-align: center;
+        min-width: 80px;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-card-btn.edit {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .mobile-card-btn.delete {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    .mobile-card-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Abordagem 2: Scroll Horizontal (Alternativa) */
+@media (max-width: 768px) {
+    .table-scroll-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-scroll {
+        min-width: 600px;
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+    }
+    
+    .table-scroll th,
+    .table-scroll td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        white-space: nowrap;
+    }
+    
+    .table-scroll th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .table-scroll tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Indicador de scroll */
+    .scroll-indicator {
+        text-align: center;
+        padding: 0.5rem;
+        background: #e3f2fd;
+        color: #1976d2;
+        font-size: 0.9rem;
+        border-radius: 0 0 8px 8px;
+    }
+}
+
+/* Abordagem 3: Layout Empilhado (Para tabelas simples) */
+@media (max-width: 768px) {
+    .table-stacked {
+        border: none;
+    }
+    
+    .table-stacked thead {
+        display: none;
+    }
+    
+    .table-stacked tbody,
+    .table-stacked tr,
+    .table-stacked td {
+        display: block;
+        width: 100%;
+    }
+    
+    .table-stacked tr {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        position: relative;
+    }
+    
+    .table-stacked td {
+        border: none;
+        padding: 0.5rem 0;
+        text-align: left;
+        position: relative;
+        padding-left: 35%;
+    }
+    
+    .table-stacked td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 30%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #666;
+    }
+}
+
+/* Estilos gerais para melhorar a experiência mobile */
+@media (max-width: 768px) {
+    /* Melhorar espaçamento geral */
+    .container {
+        padding: 0 15px;
+    }
+    
+    /* Títulos mais compactos */
+    h1, h2, h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Botões mais touch-friendly */
+    .btn, .mobile-card-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Melhorar formulários */
+    .form-control {
+        font-size: 16px; /* Previne zoom no iOS */
+        padding: 0.75rem;
+    }
+    
+    /* Alertas mais compactos */
+    .alert {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Paginação responsiva */
+    .pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .pagination .page-link {
+        padding: 0.5rem 0.75rem;
+        margin: 0.125rem;
+    }
+}
+
+/* Utilitários para mostrar/esconder em diferentes telas */
+.show-mobile {
+    display: none;
+}
+
+.show-desktop {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .show-mobile {
+        display: block;
+    }
+    
+    .show-desktop {
+        display: none;
+    }
+    
+    .hide-mobile {
+        display: none;
+    }
+}
+
+/* Animações suaves para transições */
+.mobile-card,
+.table-scroll-wrapper {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
