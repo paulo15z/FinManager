@@ -7,22 +7,22 @@
     <div>
         <h1 class="text-xl font-bold">🏠 Dashboard</h1>
         
-        {# ADIÇÃO: Exibe o período dinâmico que calculamos na view #}
+        {# ADIÇÃO IMPORTANTE: Mostra o período que está sendo exibido nos cards #}
         {% if periodo_inicio and periodo_fim %}
             <p class="text-sm text-secondary">
-                Exibindo dados de <strong>{{ periodo_inicio|date:"d/m/Y" }}</strong> até <strong>{{ periodo_fim|date:"d/m/Y" }}</strong>
+                Exibindo totais do período de <strong>{{ periodo_inicio|date:"d/m/Y" }}</strong> a <strong>{{ periodo_fim|date:"d/m/Y" }}</strong>
             </p>
         {% endif %}
     </div>
 </div>
 
+{# --- CARDS DE RESUMO DO PERÍODO --- #}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
     <div class="card">
         <div class="card-body text-center">
-            {# Usar floatformat é um pouco mais robusto para valores monetários #}
             <div class="text-2xl font-bold text-success">R$ {{ total_entradas|floatformat:2 }}</div>
             
-            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            {# CORREÇÃO: O rótulo agora reflete o período #}
             <div class="text-sm text-secondary">Total Entradas (Período)</div>
         </div>
     </div>
@@ -30,7 +30,7 @@
         <div class="card-body text-center">
             <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|floatformat:2 }}</div>
             
-            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            {# CORREÇÃO: O rótulo agora reflete o período #}
             <div class="text-sm text-secondary">Total Saídas (Período)</div>
         </div>
     </div>
@@ -38,12 +38,13 @@
         <div class="card-body text-center">
             <div class="text-2xl font-bold">R$ {{ saldo_total|floatformat:2 }}</div>
             
-            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            {# CORREÇÃO: O rótulo agora reflete o período #}
             <div class="text-sm text-secondary">Saldo do Período</div>
         </div>
     </div>
 </div>
 
+{# --- SEÇÕES DE LISTAGEM (Últimos Lançamentos, Cofrinhos, etc.) --- #}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div class="card">
         <div class="card-header">
@@ -133,7 +134,6 @@
     </div>
 </div>
 
-{# A seção de cartões de crédito não precisa de alteração, pois já mostra dados próprios #}
 <div class="card mt-6">
     <div class="card-header">
         <h2 class="card-title">💳 Cartões de Crédito</h2>
@@ -146,7 +146,7 @@
                     <th>Limite Total</th>
                     <th>Limite Disponível</th>
                     <th>% Usado</th>
-                    <th>Gasto Mês Atual</th>
+                    <th>Gasto no Período</th> {# CORREÇÃO: Rótulo da coluna #}
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -157,7 +157,7 @@
                     <td>R$ {{ cartao.limite_total|floatformat:2 }}</td>
                     <td>R$ {{ cartao.limite_disponivel|floatformat:2 }}</td>
                     <td>{{ cartao.percentual_usado_valor|floatformat:0 }}%</td>
-                    <td>R$ {{ cartao.gasto_mes_atual|floatformat:2 }}</td>
+                    <td>R$ {{ cartao.gasto_mes_atual|floatformat:2 }}</td> {# Este valor agora vem da view e corresponde ao período #}
                     <td>
                         <a href="{% url 'detalhes_cartao' pk=cartao.pk %}" class="btn btn-info btn-sm">Detalhes</a>
                     </td>

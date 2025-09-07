@@ -16,6 +16,8 @@ from dateutil.relativedelta import relativedelta
 from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm, TransferirParaCofrinhoForm, CartaoCreditoForm
 from datetime import date
 
+from gerente.utils import get_periodo_contabil_atual
+
 # --- Views de Lançamentos ---
 class LancamentoListView(ListView):
     model = Lancamento
@@ -462,37 +464,9 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
                 
-        hoje = timezone.now().date()
-        dia_de_corte = 11
-
-        if hoje.day < dia_de_corte:
-            # Estamos ANTES do dia de corte. O período termina no mês atual.
-            # Ex: hoje é 06/09. Período é de 11/08 a 10/09.
-            ano_fim = hoje.year
-            mes_fim = hoje.month
-            
-            # Para o início, voltamos um mês.
-            data_inicio_provisoria = hoje - relativedelta(months=1)
-            ano_inicio = data_inicio_provisoria.year
-            mes_inicio = data_inicio_provisoria.month
-        
-        else:
-            # Estamos NO DIA de corte ou DEPOIS. O período começa no mês atual.
-            # Ex: hoje é 15/09. Período é de 11/09 a 10/10.
-            ano_inicio = hoje.year
-            mes_inicio = hoje.month
-
-            # Para o fim, avançamos um mês.
-            data_fim_provisoria = hoje + relativedelta(months=1)
-            ano_fim = data_fim_provisoria.year
-            mes_fim = data_fim_provisoria.month
-
-        data_inicio = date(ano_inicio, mes_inicio, dia_de_corte)
-        data_fim = date(ano_fim, mes_fim, dia_de_corte - 1) # Dia 10
-
+        data_inicio, data_fim = get_periodo_contabil_atual() # usando o utils do gerente pra modularizar algumas coisas
         context['periodo_inicio'] = data_inicio
         context['periodo_fim'] = data_fim
-
 
         # 1. lançamentos dentro do periodo contabil:
 

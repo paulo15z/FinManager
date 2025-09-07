@@ -1,0 +1,67 @@
+<!-- relatorios/templates/relatorios/dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Relatórios{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-xl font-bold">📊 Dashboard de Relatórios</h1>
+        {% if periodo_inicio and periodo_fim %}
+            <p class="text-sm text-secondary">
+                Exibindo KPIs do período de <strong>{{ periodo_inicio|date:"d/m/Y" }}</strong> a <strong>{{ periodo_fim|date:"d/m/Y" }}</strong>
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Grid de KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="card bg-base-200">
+            <div class="card-body text-center">
+                <div class="text-sm text-secondary">Resultado Líquido do Período</div>
+                <div class="text-3xl font-bold {% if kpi_resultado_liquido >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    R$ {{ kpi_resultado_liquido|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card para um futuro KPI -->
+        <div class="card bg-base-200">
+            <div class="card-body text-center">
+                <div class="text-sm text-secondary">Margem de Lucro</div>
+                <div class="text-3xl font-bold text-neutral-content/50">Em Breve</div>
+            </div>
+        </div>
+
+        <!-- Card para um futuro KPI -->
+        <div class="card bg-base-200">
+            <div class="card-body text-center">
+                <div class="text-sm text-secondary">Top Despesa</div>
+                <div class="text-3xl font-bold text-neutral-content/50">Em Breve</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de Navegação para Relatórios Detalhados -->
+    <h2 class="text-lg font-bold mb-4">Análises Detalhadas</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {# Usamos relatorios:dre_detalhado por causa do app_name que definimos na URL #}
+        <a href="{% url 'relatorios:dre_detalhado' %}" class="card card-bordered card-hover transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1">
+            <div class="card-body">
+                <h3 class="card-title">📄 Demonstração de Resultado (DRE)</h3>
+                <p class="text-secondary">Analise o lucro e prejuízo do período, com todas as receitas e despesas detalhadas.</p>
+            </div>
+        </a>
+        
+        <!-- Card para um futuro relatório -->
+        <div class="card card-bordered bg-base-200">
+             <div class="card-body">
+                <h3 class="card-title text-neutral-content/50">🌊 Fluxo de Caixa (Em Breve)</h3>
+                <p class="text-secondary">Veja as entradas e saídas de dinheiro da sua conta para entender a liquidez.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

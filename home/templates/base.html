@@ -410,7 +410,7 @@
                     <a href="{% url 'lista_cartoes' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_cartoes' %}active{% endif %}">
                         💳 Cartões
                     </a>
-                    <a href="{% url 'relatorio_entradas_saidas' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorio_entradas_saidas' %}active{% endif %}">
+                    <a href="{% url 'relatorios:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'relatorios:dashboard' %}active{% endif %}">
                         📈 Relatórios
                     </a>
                 </nav>

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}DRE - Demonstração de Resultado{% endblock %}
+
+{% block content %}
+<div class="card max-w-4xl mx-auto">
+    <div class="card-header">
+        <div class="text-center">
+            <h1 class="text-xl font-bold">Demonstração do Resultado do Exercício (DRE)</h1>
+            <p class="text-sm text-secondary">
+                Período de {{ data_inicio|date:"d/m/Y" }} a {{ data_fim|date:"d/m/Y" }}
+            </p>
+        </div>
+    </div>
+    <div class="card-body p-6">
+        <table class="table w-full">
+            <tbody>
+                {# --- RECEITAS --- #}
+                <tr class="font-semibold">
+                    <td>(+) Receita Operacional Bruta</td>
+                    <td class="text-right text-success">R$ {{ dre.receita_bruta|floatformat:2 }}</td>
+                </tr>
+
+                {# --- CUSTOS --- #}
+                <tr class="font-semibold">
+                    <td>(-) Custos de Produtos/Serviços</td>
+                    <td class="text-right text-danger">(R$ {{ dre.custos|floatformat:2 }})</td>
+                </tr>
+
+                {# --- LUCRO BRUTO --- #}
+                <tr class="font-bold border-t-2 border-base-300">
+                    <td>(=) Lucro Bruto</td>
+                    <td class="text-right {% if dre.lucro_bruto >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        R$ {{ dre.lucro_bruto|floatformat:2 }}
+                    </td>
+                </tr>
+
+                {# --- DESPESAS --- #}
+                <tr class="pt-4">
+                    <td class="pt-4">(-) Despesas Operacionais</td>
+                    <td class="pt-4 text-right text-danger">(R$ {{ dre.despesas_operacionais|floatformat:2 }})</td>
+                </tr>
+                <tr>
+                    <td>(-) Despesas Administrativas</td>
+                    <td class="text-right text-danger">(R$ {{ dre.despesas_administrativas|floatformat:2 }})</td>
+                </tr>
+
+                {# --- EBITDA --- #}
+                <tr class="font-bold border-t-2 border-base-300">
+                    <td>(=) Lucro Operacional (EBITDA)</td>
+                    <td class="text-right {% if dre.ebitda >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        R$ {{ dre.ebitda|floatformat:2 }}
+                    </td>
+                </tr>
+
+                {# --- FINANCEIRO --- #}
+                <tr class="pt-4">
+                    <td class="pt-4">(-) Despesas Financeiras</td>
+                    <td class="pt-4 text-right text-danger">(R$ {{ dre.despesas_financeiras|floatformat:2 }})</td>
+                </tr>
+
+                {# --- RESULTADO LÍQUIDO --- #}
+                <tr class="font-extrabold text-lg border-t-4 border-double border-base-300">
+                    <td>(=) Resultado Líquido do Período</td>
+                    <td class="text-right {% if dre.resultado_liquido >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        R$ {{ dre.resultado_liquido|floatformat:2 }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

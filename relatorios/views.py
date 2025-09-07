@@ -1,15 +1,56 @@
 from django.shortcuts import render
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import TruncWeek
 from datetime import timedelta
 from django.views.generic import TemplateView
 from django.db import models
-
-from home.models import Lancamento
+from home.models import Lancamento, Categoria
 from home.forms import RelatorioPeriodoForm
+
+from django.utils import timezone
+from datetime import date
+from dateutil.relativedelta import relativedelta
+from decimal import Decimal
+
+from gerente.utils import get_periodo_contabil_atual
+
 
 # Create your views here.
 # --- Views de Relatórios ---
+
+class RelatoriosDashboardView(TemplateView):
+    template_name = 'relatorios/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+#-----------------------------------------------------------------#
+        data_inicio, data_fim = get_periodo_contabil_atual()
+        context['periodo_inicio'] = data_inicio
+        context['data_fim'] = data_fim
+
+#-----------------------------------------------------------------#
+
+        lancamentos_periodo = Lancamento.objects.filter(data__gte=data_inicio, data__lte=data_fim)
+
+        categorias_dre = Categoria.objects.exclude(nome='TRANSFERENCIAS')
+
+        receitas = lancamentos_periodo.filter(
+            tipo='entrada',
+            categoria__categoria_pai__in=categorias_dre
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+        despesas = lancamentos_periodo.filter(
+            tipo='saida',
+            categoria__categoria_pai__in=categorias_dre
+        ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+        resultado_liquido = receitas - despesas
+        
+        context['kpi_resultado_liquido'] = resultado_liquido
+        
+        return context
+
 class RelatorioEntradasSaidasView(TemplateView):
     template_name = 'relatorios/entradas_saidas.html'
 
@@ -80,37 +121,60 @@ class RelatorioEntradasSaidasView(TemplateView):
             })
         return context
     
+class RelatorioDREView(TemplateView):
+
+    template_name = 'relatorios/dre.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        data_inicio, data_fim = get_periodo_contabil_atual()    # utils 
+        context['data_inicio'] = data_inicio
+        context['data_fim'] = data_fim
+        
+        lancamentos_periodo = Lancamento.objects.filter(data__gte=data_inicio, data__lte=data_fim)
+
+        categorias_receitas = Categoria.objects.filter(nome = 'RECEITAS')
+        categorias_custos = Categoria.objects.filter(nome='CUSTOS DE PRODUTOS/SERVIÇOS')
+        categorias_desp_op = Categoria.objects.filter(nome='DESPESAS OPERACIONAIS')
+        categorias_desp_adm = Categoria.objects.filter(nome='DESPESAS ADMINISTRATIVAS')
+        categorias_desp_fin = Categoria.objects.filter(nome='DESPESAS FINANCEIRAS')
+
+        def calcular_total_categoria_pai(queryset, categorias_pai):
+            if not categorias_pai.exists():
+                return Decimal('0.00')
+            total = queryset.filter(categoria__categoria_pai__in = categorias_pai).aggregate(soma=Sum('valor'))['soma']
+            return total or Decimal('0.00')
+        
+        # calculo das linhas do DRE
+
+        receita_bruta = calcular_total_categoria_pai(lancamentos_periodo.filter(tipo='entrada'), categorias_receitas)
+
+        custos = calcular_total_categoria_pai(lancamentos_periodo.filter(tipo='saida'), categorias_custos)
+
+        lucro_bruto = receita_bruta - custos
+
+        despesas_operacionais = calcular_total_categoria_pai(lancamentos_periodo.filter(tipo='saida'), categorias_desp_op)
+
+        despesas_administrativas = calcular_total_categoria_pai(lancamentos_periodo.filter(tipo='saida'), categorias_desp_adm)
+
+        ebitda = lucro_bruto - despesas_operacionais - despesas_administrativas #earning before interest, taxes, cepreciation and amortization
+
+        despesas_financeiras = calcular_total_categoria_pai(lancamentos_periodo.filter(tipo='saida'), categorias_desp_fin)
+
+        resultado_liquido = ebitda - despesas_financeiras
 
 
-""" DRE = 
-(+) RECEITA TOTAL
+        context['dre'] = {      # enviar pro template
+            'receita_bruta': receita_bruta,
+            'custos': custos,
+            'lucro_bruto': lucro_bruto,
+            'despesas_operacionais': despesas_operacionais,
+            'despesas_administrativas': despesas_administrativas,
+            'ebitda': ebitda,
+            'despesas_financeiras': despesas_financeiras,
+            'resultado_liquido': resultado_liquido,
+        }
 
-Venda à vista                       [entradas]
-Venda a prazo                       [entradas]
-(-) CUSTOS VARIÁVEIS
-
-CMV / CMA                           [pagamento de fornecedor]
-Simples Nacional                    [DAS]
-Taxa de administração de cartões
-(=) MARGEM DE CONTRIBUIÇÃO (1-2)    [entradas - 2]
-
-(-) CUSTOS FIXOS
-
-Salários 
-Encargos sociais sobre salários
-Pró-labore                          [prolabore]
-Contador
-Energia/Água
-Aluguel                             [aluguel]
-Juros de antecipação de CR e DB
-Manutenção de máquinas e prédio
-Segurança
-Telefone e internet
-Vale transporte
-(=) RESULTADO OPERACIONAL LÍQUIDO (3-4)
-
-(-) Investimentos e Amortizações
-
-(=) RESULTADO FINAL (5-6-7)
-"""
-
+        return context
+    
