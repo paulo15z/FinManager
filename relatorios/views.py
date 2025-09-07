@@ -79,3 +79,38 @@ class RelatorioEntradasSaidasView(TemplateView):
                 'resumo_semanal': []
             })
         return context
+    
+
+
+""" DRE = 
+(+) RECEITA TOTAL
+
+Venda à vista                       [entradas]
+Venda a prazo                       [entradas]
+(-) CUSTOS VARIÁVEIS
+
+CMV / CMA                           [pagamento de fornecedor]
+Simples Nacional                    [DAS]
+Taxa de administração de cartões
+(=) MARGEM DE CONTRIBUIÇÃO (1-2)    [entradas - 2]
+
+(-) CUSTOS FIXOS
+
+Salários 
+Encargos sociais sobre salários
+Pró-labore                          [prolabore]
+Contador
+Energia/Água
+Aluguel                             [aluguel]
+Juros de antecipação de CR e DB
+Manutenção de máquinas e prédio
+Segurança
+Telefone e internet
+Vale transporte
+(=) RESULTADO OPERACIONAL LÍQUIDO (3-4)
+
+(-) Investimentos e Amortizações
+
+(=) RESULTADO FINAL (5-6-7)
+"""
+

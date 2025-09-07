@@ -6,8 +6,24 @@ from decimal import Decimal
 class Categoria(models.Model):
     nome = models.CharField(max_length=50, unique=True)
     descricao = models.TextField(blank=True, max_length=254, null=True)
+
+    categoria_pai = models.ForeignKey(
+        'self',
+        on_delete = models.SET_NULL,
+        null = True,
+        blank = True,
+        related_name = "subcategorias",
+        verbose_name = "Categoria Pai" 
+    )
     
+    class Meta:
+        ordering = ["categoria_pai__nome", "nome"]
+        verbose_name = "Categoria"
+        verbose_name_plural = "Categorias"
+
     def __str__(self):
+        if self.categoria_pai:
+            return f"{self.categoria_pai.nome} -> {self.nome}"
         return self.nome
 
 class Fornecedor(models.Model):
