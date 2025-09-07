@@ -4,26 +4,42 @@
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-xl font-bold">🏠 Dashboard</h1>
+    <div>
+        <h1 class="text-xl font-bold">🏠 Dashboard</h1>
+        
+        {# ADIÇÃO: Exibe o período dinâmico que calculamos na view #}
+        {% if periodo_inicio and periodo_fim %}
+            <p class="text-sm text-secondary">
+                Exibindo dados de <strong>{{ periodo_inicio|date:"d/m/Y" }}</strong> até <strong>{{ periodo_fim|date:"d/m/Y" }}</strong>
+            </p>
+        {% endif %}
+    </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
     <div class="card">
         <div class="card-body text-center">
-            <div class="text-2xl font-bold text-success">R$ {{ total_entradas|stringformat:".2f" }}</div>
-            <div class="text-sm text-secondary">Total Entradas (Mês)</div>
+            {# Usar floatformat é um pouco mais robusto para valores monetários #}
+            <div class="text-2xl font-bold text-success">R$ {{ total_entradas|floatformat:2 }}</div>
+            
+            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            <div class="text-sm text-secondary">Total Entradas (Período)</div>
         </div>
     </div>
     <div class="card">
         <div class="card-body text-center">
-            <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|stringformat:".2f" }}</div>
-            <div class="text-sm text-secondary">Total Saídas (Mês)</div>
+            <div class="text-2xl font-bold text-danger">R$ {{ total_saidas|floatformat:2 }}</div>
+            
+            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            <div class="text-sm text-secondary">Total Saídas (Período)</div>
         </div>
     </div>
     <div class="card">
         <div class="card-body text-center">
-            <div class="text-2xl font-bold">R$ {{ saldo_total|stringformat:".2f" }}</div>
-            <div class="text-sm text-secondary">Saldo Atual</div>
+            <div class="text-2xl font-bold">R$ {{ saldo_total|floatformat:2 }}</div>
+            
+            {# ALTERAÇÃO: Rótulo ajustado para refletir o período #}
+            <div class="text-sm text-secondary">Saldo do Período</div>
         </div>
     </div>
 </div>
@@ -48,7 +64,7 @@
                         <td>{{ lancamento.data|date:"d/m/Y" }}</td>
                         <td>{{ lancamento.descricao }}</td>
                         <td class="font-semibold {% if lancamento.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
-                            {% if lancamento.tipo == 'entrada' %}+{% else %}-{% endif %}R$ {{ lancamento.valor }}
+                            {% if lancamento.tipo == 'entrada' %}+{% else %}-{% endif %}R$ {{ lancamento.valor|floatformat:2 }}
                         </td>
                     </tr>
                     {% empty %}
@@ -86,8 +102,8 @@
                     {% for cofrinho in cofrinhos %}
                     <tr>
                         <td>{{ cofrinho.nome }}</td>
-                        <td>R$ {{ cofrinho.saldo|stringformat:".2f" }}</td>
-                        <td>R$ {{ cofrinho.meta|stringformat:".2f" }}</td>
+                        <td>R$ {{ cofrinho.saldo|floatformat:2 }}</td>
+                        <td>R$ {{ cofrinho.meta|floatformat:2 }}</td>
                         <td>
                              {% if cofrinho.meta > 0 %}
                                 <div class="progress-bar">
@@ -117,6 +133,7 @@
     </div>
 </div>
 
+{# A seção de cartões de crédito não precisa de alteração, pois já mostra dados próprios #}
 <div class="card mt-6">
     <div class="card-header">
         <h2 class="card-title">💳 Cartões de Crédito</h2>
@@ -137,10 +154,10 @@
                 {% for cartao in cartoes_credito %}
                 <tr>
                     <td>{{ cartao.nome }}</td>
-                    <td>R$ {{ cartao.limite_total|stringformat:".2f" }}</td>
-                    <td>R$ {{ cartao.limite_disponivel|stringformat:".2f" }}</td>
+                    <td>R$ {{ cartao.limite_total|floatformat:2 }}</td>
+                    <td>R$ {{ cartao.limite_disponivel|floatformat:2 }}</td>
                     <td>{{ cartao.percentual_usado_valor|floatformat:0 }}%</td>
-                    <td>R$ {{ cartao.gasto_mes_atual|stringformat:".2f" }}</td>
+                    <td>R$ {{ cartao.gasto_mes_atual|floatformat:2 }}</td>
                     <td>
                         <a href="{% url 'detalhes_cartao' pk=cartao.pk %}" class="btn btn-info btn-sm">Detalhes</a>
                     </td>
@@ -162,5 +179,3 @@
     </div>
 </div>
 {% endblock %}
-
-

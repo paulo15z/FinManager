@@ -12,8 +12,9 @@ from datetime import timedelta
 from django.db.models.functions import TruncWeek
 from django.db.models import F
 from decimal import Decimal
-
+from dateutil.relativedelta import relativedelta
 from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm, TransferirParaCofrinhoForm, CartaoCreditoForm
+from datetime import date
 
 # --- Views de Lançamentos ---
 class LancamentoListView(ListView):
@@ -461,15 +462,57 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
                 
-        total_entradas = Lancamento.objects.filter(
+        hoje = timezone.now().date()
+        dia_de_corte = 11
+
+        if hoje.day < dia_de_corte:
+            # Estamos ANTES do dia de corte. O período termina no mês atual.
+            # Ex: hoje é 06/09. Período é de 11/08 a 10/09.
+            ano_fim = hoje.year
+            mes_fim = hoje.month
+            
+            # Para o início, voltamos um mês.
+            data_inicio_provisoria = hoje - relativedelta(months=1)
+            ano_inicio = data_inicio_provisoria.year
+            mes_inicio = data_inicio_provisoria.month
+        
+        else:
+            # Estamos NO DIA de corte ou DEPOIS. O período começa no mês atual.
+            # Ex: hoje é 15/09. Período é de 11/09 a 10/10.
+            ano_inicio = hoje.year
+            mes_inicio = hoje.month
+
+            # Para o fim, avançamos um mês.
+            data_fim_provisoria = hoje + relativedelta(months=1)
+            ano_fim = data_fim_provisoria.year
+            mes_fim = data_fim_provisoria.month
+
+        data_inicio = date(ano_inicio, mes_inicio, dia_de_corte)
+        data_fim = date(ano_fim, mes_fim, dia_de_corte - 1) # Dia 10
+
+        context['periodo_inicio'] = data_inicio
+        context['periodo_fim'] = data_fim
+
+
+        # 1. lançamentos dentro do periodo contabil:
+
+        lancamentos_periodo = Lancamento.objects.filter(data__gte=data_inicio, data__lte=data_fim)
+
+
+        # 2. SOMA todas as entradas do periodo
+
+        total_entradas = lancamentos_periodo.filter(
             tipo="entrada"
         ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00')
 
-        total_saidas = Lancamento.objects.filter(
+        # 3. SOMA todas as saidas (excluindo cartao de credito)
+
+        total_saidas = lancamentos_periodo.filter(
             tipo="saida"
         ).exclude(
             metodo_pagamento='cartao_credito'
-        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00')
+        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00') # CORREÇÃO: Acessar ['total']
+
 
         saldo_total = total_entradas - total_saidas
         
