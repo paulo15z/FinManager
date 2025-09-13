@@ -16,7 +16,12 @@ from dateutil.relativedelta import relativedelta
 from .forms import LancamentoForm, CofrinhoForm, FornecedorForm, CategoriaForm, RelatorioPeriodoForm, TransferirParaCofrinhoForm, CartaoCreditoForm
 from datetime import date
 
-from gerente.utils import get_periodo_contabil_atual
+from gerente.utils import (
+    get_periodo_contabil_atual,
+    calcular_total_entradas,
+    calcular_total_saidas,
+    calcular_saldo_total_com_inicial
+)
 
 # --- Views de Lançamentos ---
 class LancamentoListView(ListView):
@@ -28,29 +33,24 @@ class LancamentoListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Usar o queryset completo para os cálculos
-        todos_lancamentos = self.get_queryset()
-
-        # LÓGICA CORRIGIDA:
-        # 1. Total de Entradas: Soma TODAS as entradas, independentemente do método de pagamento.
-        total_entradas = todos_lancamentos.filter(tipo='entrada').aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
-
-        # 2. Total de Saídas para o Saldo: Soma apenas as saídas que NÃO são no cartão de crédito.
-        total_saidas_saldo = todos_lancamentos.filter(
-            tipo='saida'
-        ).exclude(
-            metodo_pagamento='cartao_credito'
-        ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
-
-        # 3. Calcula o saldo com base nas regras corretas.
-        saldo_total = total_entradas - total_saidas_saldo
-
-        context['total_entradas'] = total_entradas
-        context['total_saidas'] = total_saidas_saldo # Mostra apenas as saídas que afetam o saldo
-        context['saldo_total'] = saldo_total
+        # Usa o mesmo período contábil da HomeView para consistência
+        data_inicio, data_fim = get_periodo_contabil_atual()
         
-        # Adicionar informações sobre cartões de crédito (isso permanece igual)
+        # Calcula totais com funções modulares
+        total_entradas = calcular_total_entradas(data_inicio, data_fim)
+        total_saidas = calcular_total_saidas(data_inicio, data_fim)
+        saldo_total = calcular_saldo_total_com_inicial(data_inicio, data_fim)
+        
+        # Mantém lógica existente para cartões
         context['cartoes_credito'] = CartaoCredito.objects.filter(ativo=True)
+        
+        context.update({
+            'periodo_inicio': data_inicio,
+            'periodo_fim': data_fim,
+            'total_entradas': total_entradas,
+            'total_saidas': total_saidas,
+            'saldo_total': saldo_total,
+        })
         
         return context
 
@@ -463,33 +463,16 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-                
-        data_inicio, data_fim = get_periodo_contabil_atual() # usando o utils do gerente pra modularizar algumas coisas
-        context['periodo_inicio'] = data_inicio
-        context['periodo_fim'] = data_fim
-
-        # 1. lançamentos dentro do periodo contabil:
-
-        lancamentos_periodo = Lancamento.objects.filter(data__gte=data_inicio, data__lte=data_fim)
-
-
-        # 2. SOMA todas as entradas do periodo
-
-        total_entradas = lancamentos_periodo.filter(
-            tipo="entrada"
-        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00')
-
-        # 3. SOMA todas as saidas (excluindo cartao de credito)
-
-        total_saidas = lancamentos_periodo.filter(
-            tipo="saida"
-        ).exclude(
-            metodo_pagamento='cartao_credito'
-        ).aggregate(total=Sum("valor"))['total'] or Decimal('0.00') # CORREÇÃO: Acessar ['total']
-
-
-        saldo_total = total_entradas - total_saidas
         
+        # Obtém o período contábil atual
+        data_inicio, data_fim = get_periodo_contabil_atual()
+        
+        # Calcula totais usando funções modulares
+        total_entradas = calcular_total_entradas(data_inicio, data_fim)
+        total_saidas = calcular_total_saidas(data_inicio, data_fim)
+        saldo_total = calcular_saldo_total_com_inicial(data_inicio, data_fim)
+        
+        # Mantém lógica existente para outros dados
         ultimos_lancamentos = Lancamento.objects.order_by("-data")[:5]
         cofrinhos = Cofrinho.objects.all()
         for cofrinho in cofrinhos:
@@ -509,6 +492,8 @@ class HomeView(TemplateView):
             cartao.percentual_usado_valor = cartao.percentual_usado()
         
         context.update({
+            "periodo_inicio": data_inicio,
+            "periodo_fim": data_fim,
             "ultimos_lancamentos": ultimos_lancamentos,
             "total_entradas": total_entradas,
             "total_saidas": total_saidas,
@@ -518,6 +503,3 @@ class HomeView(TemplateView):
             "cartoes_credito": cartoes_credito,
         })
         return context
-
-# --- Views de Relatórios ---
-

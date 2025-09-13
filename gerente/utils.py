@@ -31,3 +31,37 @@ def get_periodo_contabil_atual(dia_de_corte=11):
     data_fim = inicio_ciclo_seguinte - timedelta(days=1)
 
     return data_inicio, data_fim
+
+
+
+from django.db.models import Sum
+from home.models import Lancamento
+from decimal import Decimal
+from dateutil.relativedelta import relativedelta
+
+def calcular_total_entradas(inicio: date, fim: date) -> Decimal:
+    """Total de entradas no período: Útil para KPIs de receita em cantina (ex: vendas diárias)."""
+    return Lancamento.objects.filter(
+        tipo='entrada', data__gte=inicio, data__lte=fim
+    ).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+def calcular_total_saidas(inicio: date, fim: date) -> Decimal:
+    """Total de saídas no período (excluindo cartões): Reflete despesas reais de caixa."""
+    return Lancamento.objects.filter(
+        tipo='saida', data__gte=inicio, data__lte=fim
+    ).exclude(metodo_pagamento='cartao_credito').aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+
+def calcular_saldo_periodo(inicio: date, fim: date) -> Decimal:
+    """Saldo líquido do período: Entradas - Saídas. Para análises isoladas mensais."""
+    return calcular_total_entradas(inicio, fim) - calcular_total_saidas(inicio, fim)
+
+def calcular_saldo_acumulado(ate_data: date) -> Decimal:
+    """Saldo histórico até a data: Garante continuidade de caixa entre meses."""
+    entradas = Lancamento.objects.filter(tipo='entrada', data__lte=ate_data).aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+    saidas = Lancamento.objects.filter(tipo='saida', data__lte=ate_data).exclude(metodo_pagamento='cartao_credito').aggregate(total=Sum('valor'))['total'] or Decimal('0.00')
+    return entradas - saidas
+
+def calcular_saldo_total_com_inicial(inicio: date, fim: date) -> Decimal:
+    """Saldo total: Inicial + Período. Ideal para dashboard de home.html."""
+    dia_anterior = inicio - relativedelta(days=1)
+    return calcular_saldo_acumulado(dia_anterior) + calcular_saldo_periodo(inicio, fim)
