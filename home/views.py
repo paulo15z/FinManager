@@ -351,10 +351,17 @@ class TransferirParaCofrinhoView(View):
             valor = form.cleaned_data['valor']
             cofrinho = form.cleaned_data['cofrinho_destino']
             
-            saldo_atual = (Lancamento.objects.filter(tipo='entrada').aggregate(Sum('valor'))['valor__sum'] or 0) - \
-                          (Lancamento.objects.filter(tipo='saida').aggregate(Sum('valor'))['valor__sum'] or 0)
+           # saldo_atual = (Lancamento.objects.filter(tipo='entrada').aggregate(Sum('valor'))['valor__sum'] or 0) - \
+           #               (Lancamento.objects.filter(tipo='saida').aggregate(Sum('valor'))['valor__sum'] or 0)
             
-            if valor > saldo_atual:
+            data_inicio, data_fim = get_periodo_contabil_atual()
+        
+            # Calcula totais usando funções modulares
+            total_entradas = calcular_total_entradas(data_inicio, data_fim)
+            total_saidas = calcular_total_saidas(data_inicio, data_fim)
+            saldo_total = calcular_saldo_total_com_inicial(data_inicio, data_fim)
+
+            if valor > saldo_total:
                 messages.error(request, 'Saldo insuficiente para a transferência.')
                 return redirect('transferir_cofrinho')
 
