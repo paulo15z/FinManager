@@ -34,7 +34,6 @@ class Fornecedor(models.Model):
     def __str__(self):
         return self.nome
 
-
 class Cofrinho(models.Model):
     nome = models.CharField(max_length=100)
     objetivo = models.TextField(blank=True)
@@ -43,7 +42,6 @@ class Cofrinho(models.Model):
 
     def __str__(self):
         return self.nome
-
 
 class CartaoCredito(models.Model):
     nome = models.CharField(max_length=100, help_text="Nome do cartão (ex: Nubank, Itaú, etc)")
@@ -89,7 +87,6 @@ class CartaoCredito(models.Model):
             novo_limite = self.limite_total
         self.limite_disponivel = novo_limite
         self.save(update_fields=['limite_disponivel'])
-
 
 class Lancamento(models.Model):
     TIPO_CHOICES = [

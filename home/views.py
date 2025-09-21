@@ -351,9 +351,6 @@ class TransferirParaCofrinhoView(View):
             valor = form.cleaned_data['valor']
             cofrinho = form.cleaned_data['cofrinho_destino']
             
-           # saldo_atual = (Lancamento.objects.filter(tipo='entrada').aggregate(Sum('valor'))['valor__sum'] or 0) - \
-           #               (Lancamento.objects.filter(tipo='saida').aggregate(Sum('valor'))['valor__sum'] or 0)
-            
             data_inicio, data_fim = get_periodo_contabil_atual()
         
             # Calcula totais usando funções modulares
